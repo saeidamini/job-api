@@ -2,6 +2,8 @@
 GET http://localhost:3000/ HTTP/1.1
 
 ###
+GET http://localhost:3000/job HTTP/1.1
+
 
 GET https://fakestoreapi.com/products HTTP/1.1
 

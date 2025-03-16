@@ -7,6 +7,7 @@ import { HttpModule } from '@nestjs/axios';
 import { LoggerModule } from 'nestjs-pino';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { JobModule } from './job/job.module';
 
 import databaseConfig from './config/database.config';
 
@@ -45,6 +46,7 @@ import databaseConfig from './config/database.config';
         level: process.env.NODE_ENV !== 'production' ? 'debug' : 'info',
       },
     }),
+    JobModule,
   ],
   controllers: [AppController],
   providers: [AppService],
