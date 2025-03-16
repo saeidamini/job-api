@@ -3,6 +3,9 @@ import { SwaggerModule} from '@nestjs/swagger';
 import {swaggerConfig} from './config/swagger.config'
 import { Logger } from 'nestjs-pino';
 import { AppModule } from './app.module';
+import { HttpExceptionFilter } from './shared/filters/http-exception.filter';
+import { AllExceptionsFilter } from './shared/filters/all-exceptions.filter';
+
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -10,6 +13,11 @@ async function bootstrap() {
   // Use Pino logger
   app.useLogger(app.get(Logger));
   
+  app.useGlobalFilters(
+    new HttpExceptionFilter(),
+    new AllExceptionsFilter(),
+  );
+
   const document = SwaggerModule.createDocument(app, swaggerConfig);
   SwaggerModule.setup('api/docs', app, document);
   
