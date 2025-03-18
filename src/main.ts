@@ -18,6 +18,8 @@ async function bootstrap() {
     new AllExceptionsFilter(),
   );
 
+  app.setGlobalPrefix('api');
+
   const document = SwaggerModule.createDocument(app, swaggerConfig);
   SwaggerModule.setup('api/docs', app, document);
   

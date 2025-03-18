@@ -9,7 +9,7 @@ import { JobOffer } from '../entities/job-offer.entity';
 import { JobOfferDto } from '../dto/job-offer.dto';
 
 @ApiTags('jobs')
-@Controller('api/job-offers')
+@Controller('job-offers')
 export class JobController {
   constructor(
     private readonly jobService: JobService,
