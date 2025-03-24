@@ -35,8 +35,7 @@ export class JobController {
     @Query() pagination: PaginationDto,
   ) {
     try {
-      // const [jobs, total] = await this.jobService.findJobs(filter, pagination);
-      const { data, total } = await this.jobService.findJobs(filter);
+      const { data, total } = await this.jobService.findJobs(filter, pagination);
 
       
       return {

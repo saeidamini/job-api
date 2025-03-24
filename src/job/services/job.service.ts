@@ -7,6 +7,7 @@ import { Skill } from '../entities/skill.entity';
 import { JobApiService } from './job-api.service';
 import { JobTransformerService } from './job-transformer.service';
 import { JobFilterDto } from '../dto/job-filter.dto';
+import { PaginationDto } from '../dto/pagination.dto';
 
 @Injectable()
 export class JobService {
@@ -183,8 +184,69 @@ export class JobService {
     await queryRunner.manager.save(jobOffer);
   }
 
-  async findJobs(filter: JobFilterDto): Promise<{ data: JobOffer[], total: number }> {
-    const { title, location, minSalary, maxSalary, skills, page = 1, limit = 10 } = filter;
+  async findJobs(filter: JobFilterDto, pagination: PaginationDto): Promise<{ data: JobOffer[], total: number }> {
+    const { title, location, minSalary, maxSalary, skills, page = pagination?.page || 1, limit = pagination?.limit || 10 } = filter;
+    
+    // Build the query builder
+    let queryBuilder = this.jobOfferRepository.createQueryBuilder('jobOffer')
+      .leftJoinAndSelect('jobOffer.company', 'company')
+      .leftJoinAndSelect('jobOffer.skills', 'skills');
+    
+    // Apply basic filters
+    if (title) {
+      queryBuilder.andWhere('jobOffer.title ILIKE :title', { title: `%${title}%` });
+    }
+    
+    if (location) {
+      queryBuilder.andWhere('jobOffer.location ILIKE :location', { location: `%${location}%` });
+    }
+    
+    // Handle salary range filtering
+    if (minSalary) {
+      queryBuilder.andWhere('jobOffer.salaryMin >= :minSalary', { minSalary });
+    }
+    
+    if (maxSalary) {
+      queryBuilder.andWhere('jobOffer.salaryMax <= :maxSalary', { maxSalary });
+    }
+    
+    // Handle skills filtering
+    if (skills && skills.length > 0) {
+      const skillIds = await this.getSkillIdsByNames(skills);
+      
+      if (skillIds.length > 0) {
+        // Create a subquery to get job IDs with ALL required skills
+        const subQuery = this.dataSource
+          .createQueryBuilder()
+          .select('jos.jobOfferId')
+          .from('job_offer_skills', 'jos')
+          .where('jos.skillId IN (:...skillIds)', { skillIds })
+          .groupBy('jos.jobOfferId')
+          .having('COUNT(DISTINCT jos.skillId) = :skillCount', { skillCount: skillIds.length });
+        
+        // Add the subquery to the main query
+        queryBuilder.andWhere(`jobOffer.id IN (${subQuery.getQuery()})`)
+          .setParameters(subQuery.getParameters());
+      }
+    }
+    
+    // Apply ordering
+    queryBuilder.orderBy('jobOffer.postedDate', 'DESC');
+    
+    // Get total count
+    const total = await queryBuilder.getCount();
+    
+    // Apply pagination
+    queryBuilder.skip((page - 1) * limit).take(limit);
+    
+    // Get data
+    const data = await queryBuilder.getMany();
+    
+    return { data, total };
+  }
+  
+  async findJobsOld(filter: JobFilterDto, pagination: PaginationDto): Promise<{ data: JobOffer[], total: number }> {
+    const { title, location, minSalary, maxSalary, skills, page = pagination?.page || 1, limit = pagination?.limit || 10 } = filter;
     
     const where: any = {};
     
