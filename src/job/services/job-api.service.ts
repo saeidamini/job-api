@@ -17,6 +17,7 @@ export class JobApiService {
 
   async fetchProvider1Jobs(): Promise<Provider1JobDto[]> {
     const url = this.configService.get<string>('API_PROVIDER1_URL', 'https://assignment.devotel.io/api/provider1/jobs');
+    console.debug("Fetching Provider 1 jobs from: ", url);
     
     try {
       const { data } = await firstValueFrom(
@@ -37,7 +38,8 @@ export class JobApiService {
 
   async fetchProvider2Jobs(): Promise<Record<string, Provider2JobDto>> {
     const url = this.configService.get<string>('API_PROVIDER2_URL', 'https://assignment.devotel.io/api/provider2/jobs');
-    
+    console.debug("Fetching Provider 2 jobs from: ", url);
+
     try {
       const { data } = await firstValueFrom(
         this.httpService.get(url).pipe(

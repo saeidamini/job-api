@@ -239,10 +239,14 @@ export class JobService {
     return { data, total };
   }
 
-  private async getSkillIdsByNames(skillNames: string[]): Promise<string[]> {
+  private async getSkillIdsByNames(skillNames: string | string[]): Promise<string[]> {
+    if (!Array.isArray(skillNames)) {
+      skillNames = [skillNames];
+    }
     const skills = await this.skillRepository.find({
       where: skillNames.map(name => ({ name: ILike(`%${name}%`) }))
     });
+    console.debug(skills);
     return skills.map(skill => skill.id);
   }
 

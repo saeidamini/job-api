@@ -116,6 +116,9 @@ docker-compose up -d
 
 # Stop the containers
 docker-compose down
+
+# Start clean data
+docker compose down --remove-orphans  --volumes && sudo rm -rf ./data &&   docker compose up -d 
 ```
 
 ## Project Structure
